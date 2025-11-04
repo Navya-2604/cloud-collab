@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudCollab — Home</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    p {
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      animation: slideUp 2s ease-in-out;
+    }
+
+    button {
+      background: white;
+      color: #5a67d8;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #5a67d8;
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .floating-cloud {
+      position: absolute;
+      width: 120px;
+      height: 60px;
+      background: white;
+      border-radius: 50px;
+      top: 10%;
+      left: -200px;
+      opacity: 0.2;
+      animation: cloudMove 50s linear infinite;
+    }
+
+    .floating-cloud::before,
+    .floating-cloud::after {
+      content: "";
+      position: absolute;
+      background: white;
+      width: 80px;
+      height: 80px;
+      top: -20px;
+      border-radius: 50%;
+    }
+
+    .floating-cloud::before { left: 10px; }
+    .floating-cloud::after { left: 60px; }
+
+    @keyframes cloudMove {
+      from { left: -200px; }
+      to { left: 120%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-cloud" style="top: 15%; animation-delay: 0s;"></div>
+  <div class="floating-cloud" style="top: 40%; animation-delay: 10s;"></div>
+  <div class="floating-cloud" style="top: 65%; animation-delay: 20s;"></div>
+
+  <h1>☁️ CloudCollab</h1>
+  <p>
+    A Cloud-Based Document Collaboration System that allows multiple users to create, edit, and share documents in real-time — powered by Firebase & Cloud Computing.
+  </p>
+
+  <div class="btn-group">
+    <button onclick="window.location.href='login.html'">Login</button>
+    <button onclick="window.location.href='signup.html'">Sign Up</button>
+    <button onclick="window.location.href='dashboard.html'">Dashboard</button>
+  </div>
+
+  <footer>© 2025 CloudCollab Project | VTU Mini Project</footer>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Realtime Editor — CloudCollab</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header button {
+      background: #e53e3e;
+      border: none;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    header button:hover {
+      background: #c53030;
+    }
+
+    .editor-container {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      font-family: monospace;
+      font-size: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+      resize: none;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .collab-users {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .save-status {
+      font-size: 0.8rem;
+      color: #38a169;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2 id="docTitle">Document Editor</h2>
+    <div>
+      <button id="backBtn">Back to Dashboard</button>
+    </div>
+  </header>
+
+  <div class="editor-container">
+    <div class="collab-users" id="collabUsers"></div>
+    <textarea id="editor" placeholder="Start typing here..."></textarea>
+    <div class="save-status" id="saveStatus">All changes saved</div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+
+  <script>
+    // 🔥 Firebase Config (same as in login/dashboard)
+    const firebaseConfig = {
+  apiKey: "AIzaSyDuQULtYoC4rBUmHN9Kg1MVPPqLQS9Vy1Y",
+  authDomain: "cloud-collab.firebaseapp.com",
+  projectId: "cloud-collab",
+  storageBucket: "cloud-collab.firebasestorage.app",
+  messagingSenderId: "669000546229",
+  appId: "1:669000546229:web:0d03a7465b2e6d921a4bfc"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+// Enable offline persistence
+db.enablePersistence()
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn("Offline persistence failed — multiple tabs open.");
+    } else if (err.code === 'unimplemented') {
+      console.warn("Offline persistence is not supported by this browser.");
+    }
+  });
+
+    const docId = localStorage.getItem("docId");
+    const editor = document.getElementById("editor");
+    const docTitle = document.getElementById("docTitle");
+    const saveStatus = document.getElementById("saveStatus");
+    const collabUsers = document.getElementById("collabUsers");
+    const backBtn = document.getElementById("backBtn");
+
+    if (!docId) {
+      alert("No document selected!");
+      window.location.href = "dashboard.html";
+    }
+
+    backBtn.addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+
+    let isTyping = false;
+    let lastSavedTime = null;
+
+    // 🧠 Load document and sync live
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const docRef = db.collection("documents").doc(docId);
+
+      // Listen for live updates
+      docRef.onSnapshot((snapshot) => {
+        if (!snapshot.exists) return;
+        const data = snapshot.data();
+
+        docTitle.textContent = data.title;
+        collabUsers.textContent = `Collaborators: ${[data.owner, ...(data.collaborators || [])].join(", ")}`;
+
+        if (!isTyping) {
+          editor.value = data.content || "";
+        }
+      });
+
+      // Update content when typing
+      editor.addEventListener("input", () => {
+        isTyping = true;
+        saveStatus.textContent = "Saving...";
+
+        docRef
+          .update({
+            content: editor.value,
+            lastEdited: new Date(),
+          })
+          .then(() => {
+            isTyping = false;
+            lastSavedTime = new Date();
+            saveStatus.textContent = "All changes saved";
+          })
+          .catch((err) => {
+            console.error(err);
+            saveStatus.textContent = "Error saving changes";
+          });
+      });
+    });
+  </script>
+</body>
+</html>
