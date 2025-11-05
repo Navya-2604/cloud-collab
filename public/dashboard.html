@@ -1,267 +1,120 @@
-firebase.auth().onAuthStateChanged((user) => {
-  if (!user) {
-    window.location.href = "login.html"; // unauthorized access blocked
-  }
-});
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — CloudCollab</title>
-  <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background: #f7fafc;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — CloudCollab</title>
 
-    header {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #f7fafc;
+            margin: 0;
+            padding: 0;
+        }
 
-    .user-info {
-      font-size: 0.95rem;
-    }
+        header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-    main {
-      padding: 2rem;
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+        .btn {
+            background: #4a90e2;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: 0.2s;
+            font-size: 14px;
+        }
 
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      width: 320px;
-      transition: transform 0.2s;
-    }
+        .btn:hover {
+            background: #3272c3;
+        }
 
-    .card:hover {
-      transform: translateY(-5px);
-    }
+        .logout-btn {
+            background: #ff5c5c;
+        }
 
-    h3 {
-      margin-top: 0;
-      color: #333;
-    }
+        .logout-btn:hover {
+            background: #d64545;
+        }
 
-    .doc-list {
-      margin-top: 1rem;
-    }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 78vh;
+            gap: 1.2rem;
+        }
 
-    .doc {
-      background: #f0f0ff;
-      border-radius: 8px;
-      padding: 0.6rem 0.8rem;
-      margin-bottom: 0.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .card {
+            width: 350px;
+            padding: 20px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 18px;
+            font-weight: bold;
+        }
 
-    button {
-      background: #667eea;
-      border: none;
-      color: white;
-      padding: 0.6rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    button:hover {
-      background: #5a67d8;
-    }
-
-    .logout-btn {
-      background: #e53e3e;
-      margin-left: 1rem;
-    }
-
-    .logout-btn:hover {
-      background: #c53030;
-    }
-
-    .create-btn {
-      background: #48bb78;
-    }
-
-    .create-btn:hover {
-      background: #38a169;
-    }
-  </style>
+        .card:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
+
 <body>
-  <header>
-    <h2>CloudCollab Dashboard</h2>
-    <div class="user-info" id="userInfo"></div>
-    <div>
-      <button class="create-btn" id="createDocBtn">+ New Document</button>
-      <button class="logout-btn" id="logoutBtn">Logout</button>
-    </div>
-  </header>
+    <header>
+        <h2>CloudCollab Dashboard</h2>
+        <div>
+            <button class="btn" id="newDocBtn">+ New Document</button>
+            <button class="btn logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
 
-  <main>
-    <div class="card">
-      <h3>My Documents</h3>
-      <div class="doc-list" id="myDocs"></div>
+    <div class="container">
+        <div class="card" onclick="window.location.href='mydocs.html'">My Documents</div>
+        <div class="card" onclick="window.location.href='sharedocs.html'">Shared with Me</div>
     </div>
 
-    <div class="card">
-      <h3>Shared with Me</h3>
-      <div class="doc-list" id="sharedDocs"></div>
-    </div>
-  </main>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="firebase.js"></script>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
-
- <script>
-  // 🔥 Your Firebase config (replace with yours)
-  const firebaseConfig = {
-  apiKey: "AIzaSyDuQULtYoC4rBUmHN9Kg1MVPPqLQS9Vy1Y",
-  authDomain: "cloud-collab.firebaseapp.com",
-  projectId: "cloud-collab",
-  storageBucket: "cloud-collab.firebasestorage.app",
-  messagingSenderId: "669000546229",
-  appId: "1:669000546229:web:0d03a7465b2e6d921a4bfc"
-};
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  const userInfo = document.getElementById('userInfo');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const createDocBtn = document.getElementById('createDocBtn');
-  const myDocsList = document.getElementById('myDocs');
-  const sharedDocsList = document.getElementById('sharedDocs');
-
-  // 🧠 Check authentication state
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      userInfo.innerHTML = `Welcome, <b>${user.displayName || user.email}</b>`;
-      loadDocuments(user);
-    } else {
-      window.location.href = "login.html";
-    }
-  });
-
-  // 🚪 Logout function
-  logoutBtn.addEventListener('click', () => {
-    auth.signOut().then(() => {
-      window.location.href = "login.html";
-    });
-  });
-
-  // 🆕 Create new document
-  createDocBtn.addEventListener('click', () => {
-    const title = prompt("Enter document title:");
-    if (!title) return;
-
-    const user = auth.currentUser;
-    if (!user) return;
-
-    db.collection('documents').add({
-      title: title,
-      owner: user.email,
-      collaborators: [],
-      content: "",
-      lastEdited: new Date()
-    })
-    .then(() => {
-      alert("New document created!");
-      loadDocuments(user);
-    })
-    .catch(err => alert(err.message));
-  });
-
-  // 📄 Load My Documents + Shared Docs
-  function loadDocuments(user) {
-    // My Documents
-    db.collection('documents')
-      .where('owner', '==', user.email)
-      .onSnapshot(snapshot => {
-        myDocsList.innerHTML = "";
-        if (snapshot.empty) {
-          myDocsList.innerHTML = "<p>No documents yet.</p>";
-          return;
-        }
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const div = document.createElement('div');
-          div.classList.add('doc');
-          div.innerHTML = `
-            <span>${data.title}</span>
-            <div>
-              <button onclick="openDoc('${doc.id}')">Open</button>
-              <button onclick="shareDoc('${doc.id}')">Share</button>
-            </div>
-          `;
-          myDocsList.appendChild(div);
+    <script>
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "login.html";
+            }
         });
-      });
 
-    // Shared with Me
-    db.collection('documents')
-      .where('collaborators', 'array-contains', user.email)
-      .onSnapshot(snapshot => {
-        sharedDocsList.innerHTML = "";
-        if (snapshot.empty) {
-          sharedDocsList.innerHTML = "<p>No shared docs.</p>";
-          return;
-        }
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const div = document.createElement('div');
-          div.classList.add('doc');
-          div.innerHTML = `
-            <span>${data.title}</span>
-            <button onclick="openDoc('${doc.id}')">Open</button>
-          `;
-          sharedDocsList.appendChild(div);
+        document.getElementById("newDocBtn").addEventListener("click", () => {
+            window.location.href = "realtime.html";
         });
-      });
-  }
 
-  // ✍️ Open document (go to realtime editor)
-  function openDoc(docId) {
-    localStorage.setItem('docId', docId);
-    window.location.href = "realtime.html";
-  }
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                alert("Logged out successfully.");
+                window.location.href = "login.html";
+            });
+        }
+    </script>
 
-  // 🤝 Share document
-  function shareDoc(docId) {
-    const email = prompt("Enter email of collaborator to share with:");
-    if (!email) return;
-
-    const docRef = db.collection('documents').doc(docId);
-
-    docRef.update({
-      collaborators: firebase.firestore.FieldValue.arrayUnion(email)
-    })
-    .then(() => {
-      alert(`Document shared successfully with ${email}`);
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Error sharing document: " + err.message);
-    });
-  }
-</script>
-        
 </body>
+
 </html>
+

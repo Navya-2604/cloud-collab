@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Documents — CloudCollab</title>
+
+    <style>
+        body {
+            font-family: Poppins, sans-serif;
+            background: #f4f8fc;
+            margin: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            width: 85%;
+            margin: auto;
+            margin-top: 40px;
+        }
+
+        .upload-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background: #4a90e2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #3576c5;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h2>My Documents</h2>
+    <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+</header>
+
+<div class="container">
+    <h2>My Documents</h2>
+
+    <div class="upload-area">
+    <input type="file" id="fileUpload" />
+    <button type="button" id="uploadBtn">Upload</button>
+</div>
+
+
+    <h3>Your Files</h3>
+    <div id="fileList"></div>
+</div>
+
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="firebase.js"></script>
+
+<script>
+firebase.auth().onAuthStateChanged(user => {
+    if (!user) window.location.href = "login.html";
+    loadFiles();
+});
+
+document.getElementById("uploadBtn").addEventListener("click", () => {
+    const file = document.getElementById("fileUpload").files[0];
+
+    if (!file) {
+        alert("Please select a file first 😄");
+        return;
+    }
+
+    const storageRef = firebase.storage().ref("documents/" + file.name);
+    const upload = storageRef.put(file);
+
+    upload.on("state_changed", null,
+        (error) => alert("Upload failed: " + error),
+        () => {
+            upload.snapshot.ref.getDownloadURL().then(url => {
+                firebase.firestore().collection("documents").add({
+                    filename: file.name,
+                    url: url,
+                    uploadedBy: firebase.auth().currentUser.uid,
+                    timestamp: new Date()
+                });
+
+                alert("Uploaded Successfully ✅");
+                loadFiles();  // Show uploaded file immediately
+            });
+        }
+    );
+});
+
+
+function loadFiles() {
+    const fileList = document.getElementById("fileList");
+    fileList.innerHTML = "";
+
+    firebase.firestore()
+        .collection("documents")
+        .where("uploadedBy", "==", firebase.auth().currentUser.uid)
+        .get()
+        .then(snapshot => {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                fileList.innerHTML += `
+                    <div class="file-item">
+                        <span>${data.filename}</span>
+                        <button onclick="window.open('${data.url}', '_blank')">Open</button>
+                    </div>
+                `;
+            });
+        });
+}
+
+</script>
+
+</body>
+
+</html>

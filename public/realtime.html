@@ -1,180 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Realtime Editor — CloudCollab</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realtime Editor — CloudCollab</title>
+
+<style>
     body {
-      font-family: "Poppins", sans-serif;
-      background: #f8fafc;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+        font-family: "Poppins", sans-serif;
+        background: #f7fafc;
+        margin: 0;
     }
 
     header {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        padding: 1.2rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
     }
 
-    header button {
-      background: #e53e3e;
-      border: none;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
+    #backBtn {
+        background: #ff5c5c;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
     }
 
-    header button:hover {
-      background: #c53030;
-    }
-
-    .editor-container {
-      flex: 1;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    #backBtn:hover {
+        background: #d64545;
     }
 
     textarea {
-      flex: 1;
-      width: 100%;
-      font-family: monospace;
-      font-size: 1rem;
-      padding: 1rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      outline: none;
-      resize: none;
-      background: #ffffff;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        width: 95%;
+        height: 80vh;
+        margin: 20px auto;
+        display: block;
+        padding: 20px;
+        font-size: 16px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        resize: none;
+        outline: none;
     }
 
-    .collab-users {
-      font-size: 0.9rem;
-      color: #555;
+    .status {
+        margin-left: 30px;
+        color: rgb(10, 155, 10);
+        font-size: 13px;
     }
-
-    .save-status {
-      font-size: 0.8rem;
-      color: #38a169;
-    }
-  </style>
+</style>
 </head>
+
 <body>
-  <header>
-    <h2 id="docTitle">Document Editor</h2>
-    <div>
-      <button id="backBtn">Back to Dashboard</button>
-    </div>
-  </header>
 
-  <div class="editor-container">
-    <div class="collab-users" id="collabUsers"></div>
-    <textarea id="editor" placeholder="Start typing here..."></textarea>
-    <div class="save-status" id="saveStatus">All changes saved</div>
-  </div>
+<header>
+    <h2>Document Editor</h2>
+    <button id="backBtn">Back to Dashboard</button>
+</header>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+<textarea id="editor"></textarea>
+<p class="status" id="saveStatus">All changes saved ✅</p>
 
-  <script>
-    // 🔥 Firebase Config (same as in login/dashboard)
-    const firebaseConfig = {
-  apiKey: "AIzaSyDuQULtYoC4rBUmHN9Kg1MVPPqLQS9Vy1Y",
-  authDomain: "cloud-collab.firebaseapp.com",
-  projectId: "cloud-collab",
-  storageBucket: "cloud-collab.firebasestorage.app",
-  messagingSenderId: "669000546229",
-  appId: "1:669000546229:web:0d03a7465b2e6d921a4bfc"
-};
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-// Enable offline persistence
-db.enablePersistence()
-  .catch((err) => {
-    if (err.code === 'failed-precondition') {
-      console.warn("Offline persistence failed — multiple tabs open.");
-    } else if (err.code === 'unimplemented') {
-      console.warn("Offline persistence is not supported by this browser.");
-    }
-  });
+<!-- Firebase config and services -->
+<script src="firebase.js"></script>
 
-    const docId = localStorage.getItem("docId");
-    const editor = document.getElementById("editor");
-    const docTitle = document.getElementById("docTitle");
-    const saveStatus = document.getElementById("saveStatus");
-    const collabUsers = document.getElementById("collabUsers");
-    const backBtn = document.getElementById("backBtn");
-
-    if (!docId) {
-      alert("No document selected!");
-      window.location.href = "dashboard.html";
-    }
-
-    backBtn.addEventListener("click", () => {
-      window.location.href = "dashboard.html";
-    });
-
-    let isTyping = false;
-    let lastSavedTime = null;
-
-    // 🧠 Load document and sync live
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
+<script>
+// 🚀 Prevent unauthorised access
+firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
         window.location.href = "login.html";
-        return;
-      }
+    }
+});
 
-      const docRef = db.collection("documents").doc(docId);
+// ✅ EDITOR LOGIC
+const editor = document.getElementById("editor");
+const saveStatus = document.getElementById("saveStatus");
 
-      // Listen for live updates
-      docRef.onSnapshot((snapshot) => {
-        if (!snapshot.exists) return;
-        const data = snapshot.data();
+const docRef = db.collection("documents").doc("realtime-doc"); // (same doc for all users)
 
-        docTitle.textContent = data.title;
-        collabUsers.textContent = `Collaborators: ${[data.owner, ...(data.collaborators || [])].join(", ")}`;
+// Load existing content
+docRef.get().then(doc => {
+    if (doc.exists) editor.value = doc.data().content || "";
+});
 
-        if (!isTyping) {
-          editor.value = data.content || "";
+// Save in realtime (debounce)
+let typingTimer;
+editor.addEventListener("input", () => {
+    saveStatus.innerText = "Saving...";
+
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+        docRef.set({ content: editor.value });
+        saveStatus.innerText = "All changes saved ✅";
+    }, 400);
+});
+
+// ✅ Listen for updates from others (real-time sync)
+docRef.onSnapshot(doc => {
+    if (doc.exists) {
+        if (editor.value !== doc.data().content) {
+            editor.value = doc.data().content;
         }
-      });
+    }
+});
 
-      // Update content when typing
-      editor.addEventListener("input", () => {
-        isTyping = true;
-        saveStatus.textContent = "Saving...";
+// ✅ BACK TO DASHBOARD BUTTON (working now)
+document.getElementById("backBtn").addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+});
+</script>
 
-        docRef
-          .update({
-            content: editor.value,
-            lastEdited: new Date(),
-          })
-          .then(() => {
-            isTyping = false;
-            lastSavedTime = new Date();
-            saveStatus.textContent = "All changes saved";
-          })
-          .catch((err) => {
-            console.error(err);
-            saveStatus.textContent = "Error saving changes";
-          });
-      });
-    });
-  </script>
 </body>
 </html>
+
