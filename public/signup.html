@@ -66,41 +66,40 @@
     </p>
   </div>
 
-  <!-- ✅ Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+  <!-- ✅ Firebase Compat SDK (latest stable) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-  <!-- ✅ Your Firebase config file -->
-  <script src="firebase.js"></script>
+<!-- ✅ Your firebase configuration -->
+<script src="firebase.js"></script>
 
-  <!-- ✅ Signup script -->
-  <script>
-    document.getElementById("signupBtn").addEventListener("click", () => {
+<!-- ✅ Signup Logic -->
+<script>
+document.getElementById("signupBtn").addEventListener("click", () => {
 
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          const user = userCredential.user;
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
 
-          // Save name in Firestore
-          db.collection("users").doc(user.uid).set({
-            name: name,
-            email: email
-          });
+      db.collection("users").doc(user.uid).set({
+        name: name,
+        email: email
+      });
 
-          alert("✅ Account created successfully!");
-          window.location.href = "login.html";
-        })
+      alert("✅ Account Created Successfully!");
+      window.location.href = "login.html";
+    })
 
-        .catch(error => {
-          alert("❌ " + error.message);
-        });
+    .catch(error => {
+      alert("❌ " + error.message);
     });
-  </script>
+});
+</script>
 
 </body>
 </html>
